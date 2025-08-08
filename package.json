@@ -1,36 +1,84 @@
 {
   "name": "document-management-system",
   "version": "1.0.0",
-  "description": "Enterprise Document Management System with workflow automation",
-  "main": "server.js",
+  "description": "Enterprise Document Management System - Windows Desktop Application",
+  "main": "src/main/main.js",
+  "homepage": "./",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js",
-    "install-service": "node scripts/install-service.js",
-    "migrate": "node scripts/migrate.js",
-    "seed": "node scripts/seed.js",
-    "test": "jest",
-    "build": "webpack --mode production",
-    "build-dev": "webpack --mode development"
+    "start": "electron .",
+    "dev": "concurrently \"npm run server:dev\" \"wait-on http://localhost:3000 && electron .\"",
+    "server": "node src/backend/server.js",
+    "server:dev": "nodemon src/backend/server.js",
+    "build": "npm run build:renderer && npm run build:main",
+    "build:renderer": "webpack --config webpack.renderer.config.js --mode production",
+    "build:main": "webpack --config webpack.main.config.js --mode production",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder",
+    "dist:win": "electron-builder --win",
+    "dist:portable": "electron-builder --win portable",
+    "postinstall": "electron-builder install-app-deps",
+    "migrate": "node src/backend/scripts/migrate.js",
+    "seed": "node src/backend/scripts/seed.js"
+  },
+  "build": {
+    "appId": "com.company.document-management",
+    "productName": "Document Management System",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64", "ia32"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64", "ia32"]
+        },
+        {
+          "target": "msi",
+          "arch": ["x64", "ia32"]
+        }
+      ],
+      "icon": "assets/icon.ico",
+      "requestedExecutionLevel": "highestAvailable"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "runAfterFinish": true
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "your-org",
+        "repo": "document-management"
+      }
+    ]
   },
   "dependencies": {
+    "electron": "^28.0.0",
     "express": "^4.18.2",
     "express-session": "^1.17.3",
-    "express-fileupload": "^1.4.0",
-    "pg": "^8.11.3",
-    "pg-hstore": "^2.3.4",
+    "multer": "^1.4.5-lts.1",
+    "sqlite3": "^5.1.6",
+    "connect-sqlite3": "^0.9.13",
     "sequelize": "^6.35.1",
     "bcrypt": "^5.1.1",
-    "passport": "^0.7.0",
-    "passport-local": "^1.0.0",
     "nodemailer": "^6.9.7",
-    "multer": "^1.4.5-lts.1",
     "sharp": "^0.32.6",
     "pdf-parse": "^1.1.1",
     "mammoth": "^1.6.0",
     "xlsx": "^0.18.5",
     "tesseract.js": "^5.0.2",
-    "pdf-poppler": "^0.2.1",
     "express-validator": "^7.0.1",
     "helmet": "^7.1.0",
     "cors": "^2.8.5",
@@ -40,19 +88,25 @@
     "uuid": "^9.0.1",
     "moment": "^2.29.4",
     "node-cron": "^3.0.3",
-    "connect-pg-simple": "^9.0.1",
     "mime-types": "^2.1.35",
     "file-type": "^18.7.0",
-    "jimp": "^0.22.10"
+    "jimp": "^0.22.10",
+    "electron-store": "^8.1.0",
+    "electron-updater": "^6.1.7",
+    "electron-window-state": "^5.0.3",
+    "node-notifier": "^10.0.1"
   },
   "devDependencies": {
+    "electron-builder": "^24.9.1",
     "nodemon": "^3.0.2",
-    "jest": "^29.7.0",
+    "concurrently": "^8.2.2",
+    "wait-on": "^7.2.0",
     "webpack": "^5.89.0",
     "webpack-cli": "^5.1.4",
     "css-loader": "^6.8.1",
     "style-loader": "^3.3.3",
-    "html-webpack-plugin": "^5.5.4"
+    "html-webpack-plugin": "^5.5.4",
+    "copy-webpack-plugin": "^11.0.0"
   },
   "engines": {
     "node": ">=16.0.0",

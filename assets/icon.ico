@@ -1,0 +1,17 @@
+# This is a placeholder for the application icon
+# Replace this file with a proper .ico file for Windows
+# The icon should be 256x256 pixels for best results
+# You can create an icon using online tools or image editors
+
+# For now, copy a default Windows icon or create one using:
+# - Online ico converters
+# - GIMP with ico plugin
+# - Visual Studio Image Editor
+# - Or any icon creation tool
+
+# The icon will be used for:
+# - Application window
+# - System tray
+# - Windows installer
+# - Desktop shortcut
+# - Start menu entry
