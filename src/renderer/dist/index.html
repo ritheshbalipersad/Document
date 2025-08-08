@@ -297,7 +297,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link" data-page="folders">
+                    <a href="#" class="nav-link" data-page="folders" onclick="openFolderManager()">
                         <i class="fas fa-folder"></i>
                         Folders
                     </a>
@@ -475,6 +475,17 @@
 
         function viewReports() {
             showNotification('Reports functionality will be implemented', 'info');
+        }
+
+        function openFolderManager() {
+            // Open folder manager in new window or navigate to it
+            if (window.electronAPI) {
+                // In Electron, we can open a new window
+                window.open('./folder-manager.html', '_blank', 'width=1200,height=800');
+            } else {
+                // In web version, navigate to folder manager
+                window.location.href = './folder-manager.html';
+            }
         }
 
         // Initialize the application
