@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Folder Manager - Document Management System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f8fafc;
+            color: #1f2937;
+        }
+
+        .folder-manager {
+            display: flex;
+            height: 100vh;
+        }
+
+        .folder-tree-panel {
+            width: 300px;
+            background: white;
+            border-right: 1px solid #e5e7eb;
+            overflow-y: auto;
+        }
+
+        .folder-content-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .toolbar {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .toolbar-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .toolbar-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .breadcrumb-item {
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .breadcrumb-item:hover {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .folder-tree {
+            padding: 16px;
+        }
+
+        .folder-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            margin: 2px 0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .folder-item:hover {
+            background: #f3f4f6;
+        }
+
+        .folder-item.selected {
+            background: #eff6ff;
+            border: 1px solid #3b82f6;
+        }
+
+        .folder-item.drag-over {
+            background: #dbeafe;
+            border: 2px dashed #3b82f6;
+        }
+
+        .folder-icon {
+            margin-right: 8px;
+            font-size: 16px;
+        }
+
+        .folder-name {
+            flex: 1;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .folder-count {
+            font-size: 12px;
+            color: #6b7280;
+            background: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: 8px;
+        }
+
+        .folder-actions {
+            display: none;
+            gap: 4px;
+            margin-left: 8px;
+        }
+
+        .folder-item:hover .folder-actions {
+            display: flex;
+        }
+
+        .action-btn {
+            padding: 4px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            border-radius: 4px;
+            color: #6b7280;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .content-area {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .content-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .item-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .item-card:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .item-card.selected {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+
+        .item-card.dragging {
+            opacity: 0.5;
+            transform: rotate(5deg);
+        }
+
+        .item-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .item-name {
+            font-weight: 500;
+            margin-bottom: 4px;
+            word-break: break-word;
+        }
+
+        .item-meta {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .item-checkbox {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            display: none;
+        }
+
+        .item-card:hover .item-checkbox,
+        .item-card.selected .item-checkbox {
+            display: block;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            width: 500px;
+            max-width: 90vw;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #6b7280;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+        }
+
+        .color-picker {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .color-option {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .color-option.selected {
+            border-color: #374151;
+            transform: scale(1.1);
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .selection-bar {
+            background: #1f2937;
+            color: white;
+            padding: 12px 24px;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .selection-bar.show {
+            display: flex;
+        }
+
+        .selection-info {
+            font-size: 14px;
+        }
+
+        .selection-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            color: #d1d5db;
+        }
+
+        .drop-zone {
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            color: #6b7280;
+            margin: 20px 0;
+            transition: all 0.2s;
+        }
+
+        .drop-zone.drag-over {
+            border-color: #3b82f6;
+            background: #eff6ff;
+            color: #3b82f6;
+        }
+
+        .context-menu {
+            position: fixed;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: 4px 0;
+            display: none;
+            z-index: 1001;
+        }
+
+        .context-menu-item {
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .context-menu-item:hover {
+            background: #f3f4f6;
+        }
+
+        .context-menu-separator {
+            height: 1px;
+            background: #e5e7eb;
+            margin: 4px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="folder-manager">
+        <!-- Folder Tree Panel -->
+        <div class="folder-tree-panel">
+            <div class="toolbar">
+                <h3>Folders</h3>
+                <button class="btn btn-primary" onclick="showCreateFolderModal()">
+                    <i class="fas fa-plus"></i>
+                    New
+                </button>
+            </div>
+            <div class="folder-tree" id="folderTree">
+                <!-- Folder tree will be populated here -->
+            </div>
+        </div>
+
+        <!-- Content Panel -->
+        <div class="folder-content-panel">
+            <!-- Toolbar -->
+            <div class="toolbar">
+                <div class="toolbar-left">
+                    <nav class="breadcrumb" id="breadcrumb">
+                        <!-- Breadcrumb will be populated here -->
+                    </nav>
+                </div>
+                <div class="toolbar-right">
+                    <button class="btn btn-secondary" onclick="refreshContent()">
+                        <i class="fas fa-sync-alt"></i>
+                        Refresh
+                    </button>
+                    <button class="btn btn-primary" onclick="showUploadModal()">
+                        <i class="fas fa-upload"></i>
+                        Upload
+                    </button>
+                </div>
+            </div>
+
+            <!-- Selection Bar -->
+            <div class="selection-bar" id="selectionBar">
+                <div class="selection-info" id="selectionInfo">
+                    0 items selected
+                </div>
+                <div class="selection-actions">
+                    <button class="btn btn-secondary" onclick="showMoveModal()">
+                        <i class="fas fa-arrows-alt"></i>
+                        Move
+                    </button>
+                    <button class="btn btn-secondary" onclick="downloadSelected()">
+                        <i class="fas fa-download"></i>
+                        Download
+                    </button>
+                    <button class="btn btn-danger" onclick="deleteSelected()">
+                        <i class="fas fa-trash"></i>
+                        Delete
+                    </button>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="content-area">
+                <div class="content-header">
+                    <h2 class="content-title" id="contentTitle">All Documents</h2>
+                    <div class="toolbar-right">
+                        <button class="btn btn-secondary" onclick="toggleView()">
+                            <i class="fas fa-th" id="viewToggleIcon"></i>
+                            Grid
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Drop Zone -->
+                <div class="drop-zone" id="dropZone">
+                    <i class="fas fa-cloud-upload-alt" style="font-size: 32px; margin-bottom: 12px;"></i>
+                    <div>Drop files here to upload</div>
+                    <div style="font-size: 12px; margin-top: 8px;">Or click Upload button above</div>
+                </div>
+
+                <!-- Content Grid -->
+                <div class="content-grid" id="contentGrid">
+                    <!-- Content items will be populated here -->
+                </div>
+
+                <!-- Empty State -->
+                <div class="empty-state" id="emptyState" style="display: none;">
+                    <div class="empty-icon">
+                        <i class="fas fa-folder-open"></i>
+                    </div>
+                    <h3>This folder is empty</h3>
+                    <p>Upload documents or create subfolders to get started</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create/Edit Folder Modal -->
+    <div class="modal" id="folderModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="folderModalTitle">Create Folder</h3>
+                <button class="close-btn" onclick="closeFolderModal()">&times;</button>
+            </div>
+            <form id="folderForm">
+                <div class="form-group">
+                    <label class="form-label">Folder Name</label>
+                    <input type="text" class="form-input" id="folderName" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-textarea" id="folderDescription"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Parent Folder</label>
+                    <select class="form-select" id="folderParent">
+                        <option value="">Root Folder</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Color</label>
+                    <div class="color-picker">
+                        <div class="color-option selected" style="background: #3b82f6;" data-color="#3b82f6"></div>
+                        <div class="color-option" style="background: #10b981;" data-color="#10b981"></div>
+                        <div class="color-option" style="background: #f59e0b;" data-color="#f59e0b"></div>
+                        <div class="color-option" style="background: #ef4444;" data-color="#ef4444"></div>
+                        <div class="color-option" style="background: #8b5cf6;" data-color="#8b5cf6"></div>
+                        <div class="color-option" style="background: #ec4899;" data-color="#ec4899"></div>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeFolderModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Folder</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Move Items Modal -->
+    <div class="modal" id="moveModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Move Items</h3>
+                <button class="close-btn" onclick="closeMoveModal()">&times;</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Destination Folder</label>
+                <select class="form-select" id="moveDestination">
+                    <option value="">Root Folder</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeMoveModal()">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="executeMove()">Move Items</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Context Menu -->
+    <div class="context-menu" id="contextMenu">
+        <div class="context-menu-item" onclick="openItem()">
+            <i class="fas fa-folder-open"></i>
+            Open
+        </div>
+        <div class="context-menu-item" onclick="editItem()">
+            <i class="fas fa-edit"></i>
+            Edit
+        </div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item" onclick="shareItem()">
+            <i class="fas fa-share"></i>
+            Share
+        </div>
+        <div class="context-menu-item" onclick="downloadItem()">
+            <i class="fas fa-download"></i>
+            Download
+        </div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item" onclick="deleteItem()" style="color: #ef4444;">
+            <i class="fas fa-trash"></i>
+            Delete
+        </div>
+    </div>
+
+    <script src="folder-manager.js"></script>
+</body>
+</html>
